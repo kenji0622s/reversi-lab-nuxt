@@ -4,4 +4,4 @@ interface BrainModel {
     endpoint: string;
   }
 
-export default BrainModel;
+export type { BrainModel };

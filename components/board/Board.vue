@@ -46,20 +46,19 @@ function getCellStatus(rowIndex: number, colIndex: number): string {
 </script>
 
 <template>
-    <div>
-        PlayBoard: {{ blackCells }}
+    <div class="flex items-center justify-center">
+        <table>
+            <tbody>
+                <tr v-for="row in 8" :key="row">
+                    <td v-for="col in 8" :key="col" class="border-2 border-neutral-500 bg-[#0BA875] w-20 h-20  ">
+                        <div class="flex justify-center items-center w-full h-full" @click="selectCell([row, col])">
+                            <span :class="getCellStatus(row, col)" class="text-xs text-yellow-500">
+                                {{ row }} - {{ col }}
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
-    <table>
-        <tbody>
-            <tr v-for="row in 8" :key="row">
-                <td v-for="col in 8" :key="col" class="border-2 border-neutral-500 bg-[#0BA875] w-20 h-20  ">
-                    <div class="flex justify-center items-center w-full h-full" @click="selectCell([row, col])">
-                        <span :class="getCellStatus(row, col)" class="text-xs text-yellow-500">
-                            {{ row }} - {{ col }}
-                        </span>
-                    </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
 </template>

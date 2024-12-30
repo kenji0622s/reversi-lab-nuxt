@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss"],
   components: {
-    dirs: ["~/components/header", "~/components/play"],
+    dirs: ["~/components/header", "~/components/board"],
   },
   app: {
     head: {

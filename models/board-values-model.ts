@@ -6,4 +6,4 @@ interface BoardValuesModel {
   turn: string;
 }
 
-export type { BoardValuesModel };
+export default BoardValuesModel;
