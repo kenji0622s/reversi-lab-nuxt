@@ -1,7 +1,7 @@
 import BoardLogic from "~/logics/board/board-logic";
 import askBrains from "~/brains/exportAskBrains";
-
 export function useSimulationBoardValues() {
+  const maxGameCount = 30;
   const blackCells = ref<[number, number][]>([
     [4, 4],
     [5, 5],
@@ -29,12 +29,28 @@ export function useSimulationBoardValues() {
   const secondBrainWinCount = ref<number>(0);
   const drawCount = ref<number>(0);
 
-  function selectCell(cell: [number, number]): void {
-    console.log(cell);
+  const firstBrain = ref<string>("brain1");
+  const secondBrain = ref<string>("brain1");
+
+  let firstBrainTurn = "black";
+
+  const isReady = ref<boolean>(false);
+
+  function selectFirstBrain(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    firstBrain.value = target.value;
   }
 
-  function brainSelectCell(): void {
-    const brainSelectCell = askBrains["brain1"]({
+  function selectSecondBrain(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    secondBrain.value = target.value;
+  }
+
+  function selectCell(cell: [number, number]): void {
+  }
+
+  async function brainSelectCell(brain: string): Promise<void> {
+    const brainSelectCell = askBrains[brain]({
       blackCells: blackCells.value,
       whiteCells: whiteCells.value,
       blackAvailableCells: blackAvailableCells.value,
@@ -55,48 +71,85 @@ export function useSimulationBoardValues() {
     turn.value = newBoardValues.turn;
 
     if (
-      newBoardValues.turn === "black" &&
-      newBoardValues.blackAvailableCells.length > 0
-    ) {
-      nextBrainSelectCell();
-    }
-    if (
-      newBoardValues.turn === "white" &&
+      newBoardValues.blackAvailableCells.length > 0 ||
       newBoardValues.whiteAvailableCells.length > 0
     ) {
-      nextBrainSelectCell();
+      if (firstBrainTurn === "black") {
+        if (newBoardValues.turn === "black") {
+          await nextBrainSelectCell(firstBrain.value);
+        } else {
+          await nextBrainSelectCell(secondBrain.value);
+        }
+      }
+      if (firstBrainTurn === "white") {
+        if (newBoardValues.turn === "white") {
+          await nextBrainSelectCell(firstBrain.value);
+        } else {
+          await nextBrainSelectCell(secondBrain.value);
+        }
+      }
     }
 
     if (
       newBoardValues.blackAvailableCells.length === 0 &&
       newBoardValues.whiteAvailableCells.length === 0
     ) {
-      gameCount.value++;
-      if (newBoardValues.blackCells.length > newBoardValues.whiteCells.length) {
-        firstBrainWinCount.value++;
-      } else if (
-        newBoardValues.blackCells.length < newBoardValues.whiteCells.length
-      ) {
-        secondBrainWinCount.value++;
-      } else {
-        drawCount.value++;
+      if (firstBrainTurn === "black") {
+        if (
+          newBoardValues.blackCells.length > newBoardValues.whiteCells.length
+        ) {
+          firstBrainWinCount.value++;
+        } else if (
+          newBoardValues.blackCells.length < newBoardValues.whiteCells.length
+        ) {
+          secondBrainWinCount.value++;
+        } else {
+          drawCount.value++;
+        }
       }
-      if (gameCount.value < 5) {
-        resetBoardValues();
+      if (firstBrainTurn === "white") {
+        if (
+          newBoardValues.blackCells.length < newBoardValues.whiteCells.length
+        ) {
+          firstBrainWinCount.value++;
+        } else if (
+          newBoardValues.blackCells.length > newBoardValues.whiteCells.length
+        ) {
+          secondBrainWinCount.value++;
+        } else {
+          drawCount.value++;
+        }
       }
     }
   }
 
-  function nextBrainSelectCell(): void {
-    setTimeout(() => {
-      brainSelectCell();
-    }, 50);
+  async function nextBrainSelectCell(brain: string): Promise<void> {
+    await sleep(10);
+    await brainSelectCell(brain);
   }
 
-  function startSimulation(): void {
-    for (let i = 0; i < 5; i++) {
-      brainSelectCell();
-      resetBoardValues();
+  function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function startSimulation(): Promise<void> {
+    isReady.value = true;
+    for (let i = 0; i < maxGameCount; i++) {
+      if (firstBrainTurn === "black") {
+        await brainSelectCell(firstBrain.value);
+      } else {
+        await brainSelectCell(secondBrain.value);
+      }
+      if (firstBrainTurn === "black") {
+        firstBrainTurn = "white";
+      } else {
+        firstBrainTurn = "black";
+      }
+      gameCount.value++;
+      await sleep(50);
+      if (gameCount.value < maxGameCount) {
+        resetBoardValues();
+      }
     }
   }
 
@@ -122,7 +175,6 @@ export function useSimulationBoardValues() {
       [6, 5],
     ];
     turn.value = "black";
-    console.log("resetBoardValues");
   }
 
   return {
@@ -137,5 +189,10 @@ export function useSimulationBoardValues() {
     firstBrainWinCount,
     secondBrainWinCount,
     drawCount,
+    firstBrain,
+    secondBrain,
+    selectFirstBrain,
+    selectSecondBrain,
+    isReady,
   };
 }

@@ -97,7 +97,7 @@ function putAccordingToCellLevel(inputCells: [number, number][]) {
                     inputCell[0] === cell[0] && inputCell[1] === cell[1]
             );
             if (canCell) {
-                console.log("level" + (i + 1));
+                // console.log("level" + (i + 1));
                 return cell;
             }
         }
